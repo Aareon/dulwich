@@ -956,9 +956,9 @@ class HttpGitClient(GitClient):
         else:
             self.opener = opener
         if user:
-            auth_handler=urllib2.HTTPPasswordMgrWithDefaultRealm()
-            auth_handler.add_password(None,base_url,user,passwd)
-            self.opener.add_handler(auth_handler)
+            pass_man=urllib2.HTTPPasswordMgrWithDefaultRealm()
+            pass_man.add_password(None,base_url,user,passwd)
+            self.opener.add_handler(urllib2.HTTPBasicAuthHandler(pass_man))
         GitClient.__init__(self, **kwargs)
 
     def __repr__(self):
@@ -1125,9 +1125,7 @@ def get_transport_and_path_from_url(url, config=None, **kwargs):
         return SSHGitClient(parsed.hostname, port=parsed.port,
                             username=parsed.username, **kwargs), path
     elif parsed.scheme in ('http', 'https'):
-        base_url = urlparse.urlunparse((parsed.scheme, parsed.hostname,
-                                        parsed.path, parsed.params, 
-                                        parsed.query, parsed.frag))
+        base_url = urlparse.urlunparse(parsed._replace(netloc=host))
         return HttpGitClient(base_url, config=config, user=parsed.username, 
                              passwd=parsed.password, **kwargs), parsed.path
     elif parsed.scheme == 'file':
